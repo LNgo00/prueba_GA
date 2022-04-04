@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: cb-cert-manager-http01-issuer
+  name: cb-ingress-platform
+spec:
+  rules:
+  - host: {{ .Values.platform_hostname }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cb-platform
+            port:
+              number: 3000
+  tls: # < placing a host in the TLS config will determine what ends up in the cert's subjectAltNames
+  - hosts:
+    - {{ .Values.platform_hostname }}
+    - www.{{ .Values.platform_hostname }}
+    secretName: cb-ingress-cert-platform

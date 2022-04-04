@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cb-platform
+  name: cb-platform
+  namespace: cb
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: cb-platform
+  sessionAffinity: None
+  type: ClusterIP

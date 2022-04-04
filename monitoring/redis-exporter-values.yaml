@@ -1,0 +1,41 @@
+redisAddress: cb-redis-master
+annotations: {}
+labels: {}
+#  prometheus.io/path: /metrics
+#  prometheus.io/port: "9121"
+#  prometheus.io/scrape: "true"
+
+redisAddressConfig:
+  # Use config from configmap
+  enabled: false
+  # Use existing configmap (ignores redisAddress)
+  configmap:
+    name: ""
+    key: ""
+
+serviceMonitor:
+  # When set true then use a ServiceMonitor to configure scraping
+  enabled: true
+  # Set the namespace the ServiceMonitor should be deployed
+  namespace: cb-monitoring
+  # Set how frequently Prometheus should scrape
+  # interval: 30s
+  # Set path to redis-exporter telemtery-path
+  # telemetryPath: /metrics
+  # Set labels for the ServiceMonitor, use this to define your scrape label for Prometheus Operator
+  # labels:
+  # Set timeout for scrape
+  # timeout: 10s
+  # Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+  # relabelings: []
+  # Set of labels to transfer on the Kubernetes Service onto the target.
+  # targetLabels: []
+  # metricRelabelings: []
+
+auth:
+  # Use password authentication
+  enabled: true
+  # Use existing secret (ignores redisPassword)
+  secret:
+    name: "cb-redis"
+    key: "redis-password"

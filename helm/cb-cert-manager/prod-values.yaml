@@ -1,0 +1,4 @@
+server_url: https://acme-v02.api.letsencrypt.org/directory
+email: hector.valverde@biops.cloud
+dns_zone: eks-prod.cryptobirds.com
+acme_key: cb-eks-prod-acme-key
