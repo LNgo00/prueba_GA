@@ -29,9 +29,10 @@ jobs:
       - name: preparar python
         uses: actions/setup-python@v2    
 
-      - name: deploy gh-pages  
+      - name: install mkdocs 
         with:
           python-version: 3.x
         run: pip install mkdocs
-        run: mkdocs build
+      
+      - name: mkdocs deploy
         run: mkdocs gh-deploy --force
