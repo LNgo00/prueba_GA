@@ -18,10 +18,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v2
+        name: copiar y pegar Readme.me
+        run: cp README.md docs
+
+
       - uses: actions/setup-python@v2
+        name: deploy gh-pages
         with:
           python-version: 3.x
-      - run: pip install mkdocs
-      - run: mkdocs build
-      - run: mkdocs gh-deploy --force
+        run: pip install mkdocs
+        run: mkdocs build
+        run: mkdocs gh-deploy --force
