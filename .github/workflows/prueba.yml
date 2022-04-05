@@ -19,9 +19,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: copiar y pegar Readme.me
-        uses: actions/checkout@v2    
+      - name: revisar cambios
+        uses: actions/checkout@v2
+
+      - name: copiar y pegar Readme.me  
         run: cp README.md docs
 
 
-      
+      - name: preparar python
+        uses: actions/setup-python@v2    
+
+      - name: deploy gh-pages  
+        with:
+          python-version: 3.x
+        run: pip install mkdocs
+        run: mkdocs build
+        run: mkdocs gh-deploy --force
