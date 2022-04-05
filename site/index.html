@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>criptobirds</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="js/jquery-1.10.2.min.js" defer></script>
+        <script src="js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body class="homepage">
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href=".">criptobirds</a>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#cb-eks-eks-infrastructure-for-crypto-birds" class="nav-link">cb-eks - EKS infrastructure for Crypto Birds</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#authentication-to-all-resources" class="nav-link">Authentication to all resources</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#deploy-an-eks-cluster-from-scratch" class="nav-link">Deploy an EKS cluster from scratch</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#configure-the-cluster" class="nav-link">Configure the cluster</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#configure-mongodb-atlas" class="nav-link">Configure MongoDB Atlas</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#cryptobirds-workloads-deployments" class="nav-link">CryptoBirds workloads deployments</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#automated-build-and-deployment" class="nav-link">Automated build and deployment</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#monitoring-and-operations" class="nav-link">Monitoring and Operations</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="cb-eks-eks-infrastructure-for-crypto-birds">cb-eks - EKS infrastructure for Crypto Birds</h1>
+<p>Table of Contents:</p>
+<ul>
+<li><a href="#cb-eks---eks-infrastructure-for-crypto-birds">cb-eks - EKS infrastructure for Crypto Birds</a></li>
+<li><a href="#authentication-to-all-resources">Authentication to all resources</a><ul>
+<li><a href="#to-authenticate-in-aws">To authenticate in AWS</a></li>
+<li><a href="#to-authenticate-in-eks">To authenticate in EKS</a></li>
+<li><a href="#to-authenticate-in-ecr">To authenticate in ECR</a></li>
+<li><a href="#change-the-context-to-a-namespace">Change the context to a namespace</a></li>
+</ul>
+</li>
+<li><a href="#deploy-an-eks-cluster-from-scratch">Deploy an EKS cluster from scratch</a></li>
+<li><a href="#configure-the-cluster">Configure the cluster</a><ul>
+<li><a href="#create-an-nginx-ingress-controller-with-an-nlb">Create an nginx ingress controller with an NLB</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#configuring-external-dns">Configuring External DNS</a></li>
+<li><a href="#references">References</a></li>
+<li><a href="#configure-tls">Configure TLS</a></li>
+<li><a href="#install-cert-manager">Install cert-manager</a></li>
+<li><a href="#configure-acme">Configure ACME</a></li>
+<li><a href="#usage-1">Usage</a></li>
+<li><a href="#environments">Environments</a></li>
+</ul>
+</li>
+<li><a href="#configure-mongodb-atlas">Configure MongoDB Atlas</a><ul>
+<li><a href="#do-not-work-yet-iam-access-to-mongodb">(DO NOT WORK YET) IAM access to MongoDB</a></li>
+</ul>
+</li>
+<li><a href="#cryptobirds-workloads-deployments">CryptoBirds workloads deployments</a><ul>
+<li><a href="#create-the-ecr-repositories">Create the ECR repositories</a></li>
+<li><a href="#prepare-iam-authentication-for-github">Prepare IAM authentication for GitHub</a></li>
+<li><a href="#namespaces-in-kubernetes">Namespaces in Kubernetes</a></li>
+<li><a href="#crypto-birds-platform">Crypto Birds Platform</a></li>
+<li><a href="#cb-platform-mysql">cb-platform-mysql</a></li>
+<li><a href="#cb-platfrom-all-components">cb-platfrom (all components)</a></li>
+<li><a href="#secrets">Secrets</a></li>
+<li><a href="#cb-bb---github">cb-bb - GitHub</a></li>
+<li><a href="#cb-bb---twitter">cb-bb - Twitter</a></li>
+<li><a href="#cb-bb---launch-certificator">cb-bb - Launch certificator</a></li>
+<li><a href="#cb-bb-python---bb-pro">cb-bb-python - BB Pro</a></li>
+</ul>
+</li>
+<li><a href="#automated-build-and-deployment">Automated build and deployment</a><ul>
+<li><a href="#the-process-should-be">The process should be:</a></li>
+</ul>
+</li>
+<li><a href="#monitoring-and-operations">Monitoring and Operations</a><ul>
+<li><a href="#connect-to-the-database-using-port-forwarding">Connect to the database using port forwarding</a></li>
+<li><a href="#operations-with-tls-certificates">Operations with TLS certificates</a></li>
+<li><a href="#example-observing-a-cronjob-using-kubectl">Example: Observing a cronjob using kubectl</a></li>
+<li><a href="#list-of-things-we-want-to-see-when-observing-cronjobs">List of things we want to see when observing cronjobs</a></li>
+<li><a href="#running-a-cronjob-manually">Running a cronjob manually</a></li>
+<li><a href="#monitoring-cronjobs-using-kubernetes-events">Monitoring cronjobs using Kubernetes events</a></li>
+<li><a href="#installing-the-kubernetes-metrics-server">Installing the Kubernetes Metrics Server</a></li>
+<li><a href="#monitoring-with-prometheus-and-graphana">Monitoring with Prometheus and Graphana</a></li>
+<li><a href="#exporters">Exporters:</a></li>
+<li><a href="#alerting-set-up-and-protocol">Alerting set-up and protocol</a></li>
+<li><a href="#backups-and-restore">Backups and restore</a></li>
+<li><a href="#autoscaling">Autoscaling</a></li>
+</ul>
+</li>
+</ul>
+<p>This document contains the deployment instructions for an EKS cluster and all
+the Cryptobirds workloads.</p>
+<h2 id="authentication-to-all-resources">Authentication to all resources</h2>
+<p>To operate the cloud resources we provision, like infrastruture, kubernetes or
+applications, we need to authenticate our client tools to the resources APIs.</p>
+<p>In this section, we summarise the authentication process for each of the clients
+we use: <code>awscli</code>, <code>kubectl</code> and <code>docker</code>.</p>
+<h3 id="to-authenticate-in-aws">To authenticate in AWS</h3>
+<ol>
+<li>Go to https://cb-sso.awsapps.com/start#/ and login with your credentials</li>
+<li>Select the account you want to access and click on "Programatic access"</li>
+<li>Either export your the AWS keys or add a profile to the ~/.aws/credentials
+file</li>
+</ol>
+<h3 id="to-authenticate-in-eks">To authenticate in EKS</h3>
+<p>To be able to interact with the Kubernetes API, normally using <code>kubectl</code>, you
+need to update your <code>kubeconfig</code> file. This is made with the AWS CLI as follow:</p>
+<pre><code>CLUSTER_NAME=`aws eks list-clusters | jq -r '.clusters[0]'`
+aws eks update-kubeconfig --name ${CLUSTER_NAME} [--region &lt;region_name&gt;]
+</code></pre>
+<h3 id="to-authenticate-in-ecr">To authenticate in ECR</h3>
+<p>If you need to access (push or pull) docker images from the account's registry
+(ECR), you need to authenticate your docker client as well. This is also made
+with an AWS CLI command:</p>
+<pre><code>ACCOUNTID=&lt;aws-account-id&gt;
+REGION=&lt;aws-region&gt;
+aws ecr get-login-password \
+    --region ${REGION} \
+| docker login \
+    --username AWS \
+    --password-stdin ${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com
+</code></pre>
+<p>An example of the command above could be:</p>
+<pre><code>aws ecr get-login-password \
+    --region eu-west-1 \
+| docker login \
+    --username AWS \
+    --password-stdin 647183375757.dkr.ecr.eu-west-1.amazonaws.com
+</code></pre>
+<h3 id="change-the-context-to-a-namespace">Change the context to a namespace</h3>
+<pre><code>kubectl config set-context --current --namespace=&lt;desired-namespace&gt;
+</code></pre>
+<h2 id="deploy-an-eks-cluster-from-scratch">Deploy an EKS cluster from scratch</h2>
+<p>We do the EKS installation following this documentation: https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html.</p>
+<p>Even though it is recommended to follow the official documentation, here I pasted the most relevant commands for reference:</p>
+<ul>
+<li>Create the cluster</li>
+</ul>
+<pre><code>CLUSTER_NAME=&lt;cluster-name&gt;
+eksctl create cluster \
+ --name ${CLUSTER_NAME} \
+ --version 1.21 \
+ --with-oidc \
+ --without-nodegroup
+</code></pre>
+<ul>
+<li>Create a key</li>
+</ul>
+<pre><code>KEY_NAME=&lt;key-name&gt;
+aws ec2 create-key-pair --region eu-west-1 --key-name ${KEY_NAME}
+</code></pre>
+<ul>
+<li>Create the node group</li>
+</ul>
+<pre><code>NODEGROUP_NAME=&lt;node-group-name&gt;
+eksctl create nodegroup \
+  --cluster ${CLUSTER_NAME} \
+  --region eu-west-1 \
+  --name ${NODEGROUP_NAME} \
+  --node-type t2.medium \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --enable-ssm \
+  --node-private-networking \
+  --managed
+</code></pre>
+<h2 id="configure-the-cluster">Configure the cluster</h2>
+<h3 id="create-an-nginx-ingress-controller-with-an-nlb">Create an nginx ingress controller with an NLB</h3>
+<p>This option for ingress will deploy an nginx contoller in the cluster and an NLB in AWS.</p>
+<p>Based on: https://www.appvia.io/blog/expose-kubernetes-service-eks-dns-tls</p>
+<pre><code>kubectl config set-context --current --namespace=ingress-nginx
+</code></pre>
+<p>With Helm:
+https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx</p>
+<pre><code>helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+</code></pre>
+<pre><code>helm install -f ./eks-manifests/ingress-nginx-values.yaml ingress-nginx ingress-nginx/ingress-nginx
+</code></pre>
+<h4 id="usage">Usage</h4>
+<p>See: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations to undesrtand how to configure your Ingress</p>
+<p>You can see an example in the application Ingresses</p>
+<h3 id="configuring-external-dns">Configuring External DNS</h3>
+<p>To be able to use Route53 as the DNS zone for our cluster.</p>
+<ul>
+<li>Create an IAM policy with the following:</li>
+</ul>
+<pre><code>{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [
+        &quot;route53:ChangeResourceRecordSets&quot;
+      ],
+      &quot;Resource&quot;: [
+        &quot;arn:aws:route53:::hostedzone/*&quot;
+      ]
+    },
+    {
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [
+        &quot;route53:ListHostedZones&quot;,
+        &quot;route53:ListResourceRecordSets&quot;
+      ],
+      &quot;Resource&quot;: [
+        &quot;*&quot;
+      ]
+    }
+  ]
+}
+</code></pre>
+<p>The policy above is in a file in this repository, so it can be created with the following command:</p>
+<pre><code>aws iam create-policy --policy-name cb-eks-external-dns-policy --policy-document file://aws-resources/cb-eks-external-dns-policy.json
+</code></pre>
+<p>In this case it was named <code>cb-eks-external-dns-policy</code></p>
+<ul>
+<li>With <code>eksctl</code> create an <code>iamserviceaccount</code>:</li>
+</ul>
+<p>(Values are examples used in dev at some point)</p>
+<pre><code>SERVICE_ACCOUNT_NAME=cb-external-dns
+NAMESPACE=kube-system
+CLUSTER_NAME=cb-hector-eks-test-2
+IAM_POLICY_ARN=arn:aws:iam::647183375757:policy/cb-eks-external-dns-policy
+eksctl create iamserviceaccount \
+    --name ${SERVICE_ACCOUNT_NAME} \
+    --namespace ${NAMESPACE} \
+    --cluster ${CLUSTER_NAME} \
+    --attach-policy-arn ${IAM_POLICY_ARN} \
+    --approve \
+    --override-existing-serviceaccounts
+</code></pre>
+<pre><code>HOSTED_ZONE_ID=Z04485691H4TEXAXGOP2Y
+HOSTED_ZONE_NAME=eks-dev.cryptobirds.com
+NAMESPACE=kube-system
+helm install external-dns \
+  --set provider=aws \
+  --set aws.zoneType=public \
+  --set txtOwnerId=${HOSTED_ZONE_ID} \
+  --set domainFilters\[0\]=${HOSTED_ZONE_NAME} \
+  --set serviceAccount.name=${SERVICE_ACCOUNT_NAME} \
+  --set serviceAccount.create=false \
+  --set policy=sync \
+  -n ${NAMESPACE} \
+  bitnami/external-dns
+</code></pre>
+<h4 id="references">References</h4>
+<ul>
+<li>https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html</li>
+<li>https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws.md</li>
+<li>https://github.com/bitnami/charts/tree/master/bitnami/external-dns</li>
+</ul>
+<h3 id="configure-tls">Configure TLS</h3>
+<h4 id="install-cert-manager">Install cert-manager</h4>
+<p>https://cert-manager.io/docs/installation/kubernetes/</p>
+<pre><code>kubectl create namespace cert-manager
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+</code></pre>
+<pre><code>helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.5.4 \
+  --set installCRDs=true
+</code></pre>
+<h4 id="configure-acme">Configure ACME</h4>
+<p>https://cert-manager.io/docs/configuration/acme/</p>
+<ul>
+<li>Create a new IAM policy</li>
+</ul>
+<pre><code>aws iam create-policy --policy-name cb-eks-cert-manager-policy-dns01 --policy-document file://aws-resources/cb-eks-cert-manager-policy-dns01.json
+</code></pre>
+<ul>
+<li>Override the service account created by cert-manager with the EKS IAM role</li>
+</ul>
+<pre><code>SERVICE_ACCOUNT_NAME=cert-manager
+NAMESPACE=cert-manager
+CLUSTER_NAME=cb-hector-eks-test-2
+IAM_POLICY_ARN=arn:aws:iam::359744453235:policy/cb-eks-cert-manager-policy-dns01
+eksctl create iamserviceaccount \
+    --name ${SERVICE_ACCOUNT_NAME} \
+    --namespace ${NAMESPACE} \
+    --cluster ${CLUSTER_NAME} \
+    --attach-policy-arn ${IAM_POLICY_ARN} \
+    --approve \
+    --override-existing-serviceaccounts
+</code></pre>
+<ul>
+<li>Get the ARN of the created role. You can find the role with:</li>
+</ul>
+<pre><code>aws iam list-roles
+</code></pre>
+<p>And get the ARN of the role that contains <code>cert-manager</code> in the conditions</p>
+<ul>
+<li>Edit the <code>serviceaccount</code> with as follow:</li>
+</ul>
+<pre><code>kubectl edit serviceaccount ${SERVICE_ACCOUNT_NAME}
+</code></pre>
+<p>And add the following annotation (change the ARN accordingly):</p>
+<pre><code>eks.amazonaws.com/role-arn: arn:aws:iam::359744453235:role/eksctl-cb-eks-prod-01-addon-iamserviceaccoun-Role1-1DT0AYBFGV5KK
+</code></pre>
+<ul>
+<li>Edit the <code>cert-manager</code> deployment to include <code>fsGroup</code> as follow:</li>
+</ul>
+<p>See: https://cert-manager.io/docs/configuration/acme/dns01/route53/</p>
+<pre><code>kubectl edit deployment cert-manager -n cert-manager
+</code></pre>
+<pre><code>spec:
+  template:
+    spec:
+      securityContext:
+        fsGroup: 1001
+</code></pre>
+<p>Note: Remove the <code>nonRoot</code> parameter from the <code>securityContext</code></p>
+<ul>
+<li>Deploy the issuers (HTTP01 and DNS01)</li>
+</ul>
+<pre><code>ENVIRONMENT=&lt;dev or prod&gt;
+CHART=cb-cert-manager
+helm install cb-cert-manager-issuers -f ./helm/$CHART/$ENVIRONMENT-values.yaml ./helm/$CHART
+</code></pre>
+<h4 id="usage_1">Usage</h4>
+<p>https://cert-manager.io/docs/usage/ingress/</p>
+<h3 id="environments">Environments</h3>
+<h2 id="configure-mongodb-atlas">Configure MongoDB Atlas</h2>
+<p>TODO (part of new BB)</p>
+<h3 id="do-not-work-yet-iam-access-to-mongodb">(DO NOT WORK YET) IAM access to MongoDB</h3>
+<ul>
+<li>First, create a service account associated to an IAM role using <code>eksctl</code>:</li>
+</ul>
+<pre><code>NAMESPACE=cb
+CLUSTER_NAME=cb-hector-eks-test-2
+SA_NAME=cb-mongodb-atlas-dev
+ROLE_NAME=cb-mongodb-atlas-dev-admin-role
+POLICY_ARN=arn:aws:iam::aws:policy/AmazonWorkLinkReadOnly
+eksctl create iamserviceaccount \
+    --name ${SA_NAME} \
+    --namespace ${NAMESPACE} \
+    --cluster ${CLUSTER_NAME} \
+    --approve \
+    --attach-policy-arn ${POLICY_ARN} \
+    --role-name ${ROLE_NAME} \
+    --override-existing-serviceaccounts
+</code></pre>
+<ul>
+<li>To test in an interactive pod:</li>
+</ul>
+<pre><code>kube run -it --attach ubuntu --image=ubuntu:20.04 --serviceaccount ${SA_NAME}
+
+# Then, inside the container:
+apt update &amp;&amp; apt install -y wget
+wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.0.4_amd64.deb
+apt install -y ./mongodb-mongosh_1.0.4_amd64.deb
+</code></pre>
+<h2 id="cryptobirds-workloads-deployments">CryptoBirds workloads deployments</h2>
+<h3 id="create-the-ecr-repositories">Create the ECR repositories</h3>
+<p>ECR repositories are created in each AWS account, hence, in each environment.</p>
+<p>Repositories names:
+* admin
+* api
+* birdbrain
+* birdbrain-python
+* certificator
+* corporate
+* platform</p>
+<p>To create the repositories:</p>
+<pre><code>for r in admin api birdbrain birdbrain-python certificator corporate platform; do
+  aws ecr create-repository --repository-name $r
+done
+</code></pre>
+<p>Once the registries have been created, the user has to authenticate in ECR (see the authentication section above). This is only needed to build and push manually.
+Otherwise, build, push and even deployment are configured in GitHub actions.</p>
+<pre><code>ACCOUNTID=&lt;account-id&gt;
+REPOSITORY=&lt;repository&gt;
+docker build -t ${ACCOUNTID}.dkr.ecr.eu-west-1.amazonaws.com/${REPOSITORY} .
+docker push ${ACCOUNTID}.dkr.ecr.eu-west-1.amazonaws.com/${REPOSITORY}
+</code></pre>
+<h3 id="prepare-iam-authentication-for-github">Prepare IAM authentication for GitHub</h3>
+<ul>
+<li>Create IAM policy. At the moment this policy allows push to all repositoires.</li>
+<li>The policy document is <code>aws-resources/cb-ecr-push-github-policy.json</code></li>
+</ul>
+<pre><code>aws iam create-policy \
+    --policy-name cb-ecr-push-github-policy \
+    --policy-document file://aws-resources/cb-ecr-push-github-policy.json
+</code></pre>
+<ul>
+<li>Create another policy. At the moment this policy allows list and describe Clusters.</li>
+<li>The policy document is <code>aws-resources/cb-eks-deploy-github-policy.json</code></li>
+</ul>
+<pre><code>aws iam create-policy \
+    --policy-name cb-eks-deploy-github-policy \
+    --policy-document file://aws-resources/cb-eks-deploy-github-policy.json
+</code></pre>
+<ul>
+<li>Create the IAM user as follow:</li>
+</ul>
+<pre><code>aws iam create-user --user-name cb-github-user
+</code></pre>
+<ul>
+<li>Attach the policies to the user</li>
+</ul>
+<pre><code>aws iam attach-user-policy --user-name cb-github-user \
+  --policy-arn arn:aws:iam::359744453235:policy/cb-ecr-push-github-policy
+
+
+aws iam attach-user-policy --user-name cb-github-user \
+  --policy-arn arn:aws:iam::359744453235:policy/cb-eks-deploy-github-policy
+</code></pre>
+<ul>
+<li>Verify the policies have been attached:</li>
+</ul>
+<pre><code>aws iam list-attached-user-policies --user-name cb-github-user
+</code></pre>
+<ul>
+<li>Copy the IAM keys and install them in GitHub</li>
+</ul>
+<pre><code>aws iam create-access-key --user-name cb-github-user
+</code></pre>
+<ul>
+<li>Then, we need to map the IAM user with an authorized group inside EKS. To do that, we have following this document: https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html</li>
+<li>In summary, we edit a ConfigMap as follow:</li>
+</ul>
+<pre><code>kubectl edit -n kube-system configmap/aws-auth
+</code></pre>
+<ul>
+<li>We need to add the <code>mapUsers</code> object. See the example below:</li>
+</ul>
+<pre><code># Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  mapRoles: |
+    - groups:
+      - system:bootstrappers
+      - system:nodes
+      rolearn: arn:aws:iam::647183375757:role/eksctl-cb-hector-eks-test-2-nodeg-NodeInstanceRole-1SOYAF725VTHD
+      username: system:node:{{EC2PrivateDNSName}}
+  mapUsers: |
+    - userarn: arn:aws:iam::647183375757:user/cb-github-user
+      username: cb-github-user
+      groups:
+        -  system:masters
+kind: ConfigMap
+metadata:
+  creationTimestamp: &quot;2021-06-22T17:38:25Z&quot;
+  name: aws-auth
+  namespace: kube-system
+  resourceVersion: &quot;37661732&quot;
+  uid: 30505643-013c-4794-89ce-579a25eb26eb
+</code></pre>
+<h3 id="namespaces-in-kubernetes">Namespaces in Kubernetes</h3>
+<p>Create a namespace named <code>cb</code>.</p>
+<pre><code>kubectl create namespace cb
+</code></pre>
+<h3 id="crypto-birds-platform">Crypto Birds Platform</h3>
+<h4 id="cb-platform-mysql">cb-platform-mysql</h4>
+<p>To provision the database:
+- TODO: Create users, after we are in production, as in not urgent: https://cryptobirds.atlassian.net/jira/software/c/projects/CBP/boards/1/backlog?atlOrigin=eyJpIjoiNDQ1M2QzMTdjZGRhNGJiMTliY2VkMDFhMWUzMmIwYmEiLCJwIjoiaiJ9
+- Create schema</p>
+<pre><code>CREATE SCHEMA `cryptobirds` ;
+</code></pre>
+<ul>
+<li>Load data
+Export data from the actual RDS database and import it from the client.
+Related: Connect to the database using port forwarding</li>
+</ul>
+<h4 id="cb-platfrom-all-components">cb-platfrom (all components)</h4>
+<ul>
+<li>Installation</li>
+</ul>
+<pre><code>ENVIRONMENT=&lt;dev or prod&gt;
+CHART=cb-platform
+helm install $CHART -n cb -f helm/${CHART}/${ENVIRONMENT}-values.yaml ./helm/${CHART}
+</code></pre>
+<ul>
+<li>Upgrade</li>
+</ul>
+<p>First, export some secrets:</p>
+<pre><code>export REDIS_PASSWORD=$(kubectl get secret --namespace &quot;cb&quot; cb-platform-redis -o jsonpath=&quot;{.data.redis-password}&quot; | base64 --decode)
+
+export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace &quot;cb&quot; cb-platform-mysql -o jsonpath=&quot;{.data.mysql-root-password}&quot; | base64 --decode)
+</code></pre>
+<p>Then, run the upgrade:</p>
+<pre><code>ENVIRONMENT=dev
+CHART=cb-platform
+helm upgrade $CHART -n cb \
+--set redis.auth.password=$REDIS_PASSWORD \
+--set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD \
+-f helm/${CHART}/${ENVIRONMENT}-values.yaml \
+./helm/${CHART}
+</code></pre>
+<h3 id="secrets">Secrets</h3>
+<h4 id="cb-bb-github">cb-bb - GitHub</h4>
+<ul>
+<li>Create the secret with the GitHub credentials</li>
+</ul>
+<pre><code>SECRET_NAME=cb-github-credentials-dev
+kubectl create secret generic ${SECRET_NAME} --from-literal=cb-github-consumer-key=&quot;${GITHUB_TOKEN}&quot; 
+</code></pre>
+<h4 id="cb-bb-twitter">cb-bb - Twitter</h4>
+<ul>
+<li>Create the secret with the Twitter credentials</li>
+</ul>
+<pre><code>SECRET_NAME=cb-twitter-credentials-dev
+kubectl create secret generic ${SECRET_NAME} --from-literal=cb-twitter-consumer-key=&quot;${CONSUMER_KEY}&quot; --from-literal=cb-twitter-consumer-secret=&quot;${CONSUMER_SECRET}&quot; --from-literal=cb-twitter-bearer-token=&quot;${BEARER_TOKEN}&quot;
+</code></pre>
+<h4 id="cb-bb-scores">cb-bb - Scores</h4>
+<ul>
+<li>Create the secrets</li>
+</ul>
+<pre><code>API_AUTH_EMAIL=&quot;noreply-api-user@cryptobirds.com&quot;
+API_AUTH_PASSWORD=&quot;**&quot;
+kubectl create secret generic cb-api-user \
+--from-literal=api-auth-email=${API_AUTH_EMAIL} \
+--from-literal=api-auth-password=${API_AUTH_PASSWORD}
+</code></pre>
+<h4 id="cb-bb-launch-certificator">cb-bb - Launch certificator</h4>
+<ul>
+<li>Create the secrets</li>
+</ul>
+<pre><code>WEB3J_CLIENT_ADDRESS=&quot;https://rinkeby.infura.io/v3/dabe0addb2b24cc8a798c65a574ccfb0&quot;
+ETH_PRIVATE_KEY=&quot;**&quot;
+kubectl create secret generic cb-certificator-secrets \
+--from-literal=web3j-client-address=${WEB3J_CLIENT_ADDRESS} \
+--from-literal=eth-private-key=${ETH_PRIVATE_KEY}
+</code></pre>
+<ul>
+<li>To get/decode a secret: https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/#decoding-secret
+...or install <a href="https://github.com/elsesiy/kubectl-view-secret"><code>view-secret</code></a> plugin</li>
+</ul>
+<h4 id="cb-bb-python-bb-pro">cb-bb-python - BB Pro</h4>
+<pre><code>kubectl create secret generic cb-platform-mongo \
+--from-literal=mongodb-user=${MONGODB_USER} \
+--from-literal=mongodb-password=${MONGODB_PASSWORD} \
+--from-literal=mongodb-cluster=${MONGODB_CLUSTER} \
+--from-literal=mongodb-db=${MONGODB_DB}
+</code></pre>
+<h4 id="cb-platform-rest-api-rest-api">cb-platform-rest-api - Rest API</h4>
+<pre><code>kubectl create secret generic cb-platform-external \
+--from-literal=bscscan-api-key=${BSCSCAN_API}
+</code></pre>
+<p>For Corporate and API:</p>
+<pre><code>kubectl create secret generic cb-platform-mailchimp \
+--from-literal=api-key=${MAILCHIMP_API}
+</code></pre>
+<pre><code>kubectl create secret generic cb-platform-smtp \
+--from-literal=smtp-user=${SMTP_USER} \
+--from-literal=smtp-password=${SMTP_PASS} \
+--from-literal=email-secret=${EMAIL_SECRET}
+</code></pre>
+<h2 id="automated-build-and-deployment">Automated build and deployment</h2>
+<h3 id="the-process-should-be">The process should be:</h3>
+<ul>
+<li>(For dev team) Run the tests</li>
+<li>(done) Build a docker image</li>
+<li>(done) Tag the docker image with the commit hash</li>
+<li>(done) Push it to ECR (central ECR ?)</li>
+<li>(done) Deploy to dev cluster (manifests? helm? patch?)</li>
+<li>Deploy to prod cluster</li>
+</ul>
+<h2 id="monitoring-and-operations">Monitoring and Operations</h2>
+<h3 id="connect-to-the-database-using-port-forwarding">Connect to the database using port forwarding</h3>
+<ul>
+<li>First get the password from the secrets</li>
+</ul>
+<pre><code>ROOT_PASSWORD=$(kubectl get secret --namespace cb cb-platform-mysql -o jsonpath=&quot;{.data.mysql-root-password}&quot; | base64 --decode)
+</code></pre>
+<ul>
+<li>Create a port forwarding in a different session</li>
+</ul>
+<pre><code>kubectl port-forward service/cb-platform-mysql 3306:3306
+</code></pre>
+<ul>
+<li>Use your favorite client to connect. For example:</li>
+</ul>
+<pre><code>mysql -uroot -p -h 127.0.0.1
+</code></pre>
+<h3 id="operations-with-tls-certificates">Operations with TLS certificates</h3>
+<ul>
+<li>Install the <code>cmctl</code> tool from: https://cert-manager.io/docs/usage/cmctl/#installation</li>
+</ul>
+<h3 id="example-observing-a-cronjob-using-kubectl">Example: Observing a cronjob using kubectl</h3>
+<p>In this section, we describe how to observe the status of a cronjob previously created.</p>
+<p>Firstly, I login into AWS and EKS as described at the top of this document.
+Then, I change to the namespace where we are deploying our workloads and get
+all cronjobs:</p>
+<pre><code># Change to the namespace with name cb
+kubectl config set-context --current --namespace=cb
+
+# ... output ommited
+
+# Get all cronjobs in the current namespace
+kubectl get cj
+
+NAME              SCHEDULE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+twitter-job   @daily     False     8        21h             4d5h
+</code></pre>
+<p>Alternatively, if we want to look for all cronjobs in the cluster, we can pass
+the <code>-A</code> arguments to tell <code>kubectl</code> to look into all namespaces:</p>
+<pre><code>kubectl get cj -A
+
+NAMESPACE   NAME              SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+cb          twitter-job   @daily        False     8        21h             4d5h
+bb      fernandojob       */5 * * * *   False     0        2m31s           40d
+bb      4chan-job     @daily        False     3        21h             41d
+</code></pre>
+<p>Let's say that I don't know what is going on the cronjob named <code>twitter-job</code>,
+so I want to explore how it is configured and how it is behaving.</p>
+<p>From the command above, I can see that the cronjob in question is scheduled to run
+every day. In addition, something is alarming me because I see there are 8 active
+jobs!! Is this really desired? I smell something wrong here ... let's explore deeper.</p>
+<p>A <code>crojob</code> object is a kubernetes resource that creates a new <code>job</code> every time it is triggered.
+A <code>job</code> deploys <code>pods</code> that are expected to carry out a task and finish at some point.
+To explore the whole workload, let's find more information about the <code>cronjob</code>,
+then we will look at the <code>jobs</code> and finally we will troubleshoot the <code>pods</code>.</p>
+<p>To get more information about an object, we have the following commands:</p>
+<pre><code># Describe the object, in this case the cronjob, in plain text
+kubectl describe cronjob twitter-job
+
+# Desctibe the object in yaml format. Useful when you want to see the same
+format as the manifest
+kubectl get cronjob twitter-job -o yaml
+</code></pre>
+<p>As output of the first command above, I got:</p>
+<pre><code>Name:                          twitter-job
+Namespace:                     cb
+Labels:                        &lt;none&gt;
+Annotations:                   &lt;none&gt;
+Schedule:                      @daily
+Concurrency Policy:            Allow
+Suspend:                       False
+Successful Job History Limit:  3
+Failed Job History Limit:      1
+Starting Deadline Seconds:     &lt;unset&gt;
+Selector:                      &lt;unset&gt;
+Parallelism:                   &lt;unset&gt;
+Completions:                   &lt;unset&gt;
+Pod Template:
+  Labels:  &lt;none&gt;
+  Containers:
+   bb-twitter:
+    Image:      647183375757.dkr.ecr.eu-west-1.amazonaws.com/bb
+    Port:       &lt;none&gt;
+    Host Port:  &lt;none&gt;
+    Command:
+      node
+      scripts/twitter.js
+    Environment:
+      MYSQL_USER:      root
+      MYSQL_PASSWORD:  &lt;set to the key 'mysql-root-password' in secret 'mysql'&gt;  Optional: false
+      MYSQL_SERVER:    mysql
+      MYSQL_DATABASE:  cryptobirds
+    Mounts:            &lt;none&gt;
+  Volumes:             &lt;none&gt;
+Last Schedule Time:    Mon, 02 Aug 2021 02:00:00 +0200
+Active Jobs:           twitter-job-27126253, twitter-job-27126254, twitter-job-27126255, twitter-job-27126256, twitter-job-27126720, twitter-job-27128160, twitter-job-27129600, twitter-job-27131040
+Events:                &lt;none&gt;
+</code></pre>
+<p>I see they are 8 active jobs ... Why? jobs are supposed to finish soon, there
+should be a maximum of 1 active job, right? Let's take a look to the <code>jobs</code>.</p>
+<pre><code>kubectl get jobs
+NAME                       COMPLETIONS   DURATION   AGE
+twitter-job-27126253   0/1           4d5h       4d5h
+twitter-job-27126254   0/1           4d5h       4d5h
+twitter-job-27126255   0/1           4d5h       4d5h
+twitter-job-27126256   0/1           4d5h       4d5h
+twitter-job-27126720   0/1           3d21h      3d21h
+twitter-job-27128160   0/1           2d21h      2d21h
+twitter-job-27129600   0/1           45h        45h
+twitter-job-27131040   0/1           21h        21h
+</code></pre>
+<p>Ok, as per the <code>COMPLETIONS</code> column, looks like these jobs never finished. Now,
+I see the next step is to get more information about one of these jobs. Let's take
+a look to the last one:</p>
+<p>Again,</p>
+<pre><code>kubectl describe job twitter-job-27131040 
+Name:           twitter-job-27131040
+Namespace:      cb
+Selector:       controller-uid=39474e16-cb47-4d45-ba7e-e0520d478e41
+Labels:         controller-uid=39474e16-cb47-4d45-ba7e-e0520d478e41
+                job-name=twitter-job-27131040
+Annotations:    &lt;none&gt;
+Controlled By:  CronJob/twitter-job
+Parallelism:    1
+Completions:    1
+Start Time:     Mon, 02 Aug 2021 02:00:00 +0200
+Pods Statuses:  1 Running / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  controller-uid=39474e16-cb47-4d45-ba7e-e0520d478e41
+           job-name=twitter-job-27131040
+  Containers:
+   bb-twitter:
+    Image:      647183375757.dkr.ecr.eu-west-1.amazonaws.com/bb
+    Port:       &lt;none&gt;
+    Host Port:  &lt;none&gt;
+    Command:
+      node
+      scripts/twitter.js
+    Environment:
+      MYSQL_USER:      root
+      MYSQL_PASSWORD:  &lt;set to the key 'mysql-root-password' in secret 'mysql'&gt;  Optional: false
+      MYSQL_SERVER:    mysql
+      MYSQL_DATABASE:  cryptobirds
+    Mounts:            &lt;none&gt;
+  Volumes:             &lt;none&gt;
+Events:                &lt;none&gt;
+</code></pre>
+<p>I see information about the job itself but, to be honest, I don't see much insight
+about what's going on with the tasks. Let's jump directly the the pods:</p>
+<pre><code>kubectl get pods
+</code></pre>
+<p>Output:</p>
+<pre><code>kubectl get pods
+NAME                                READY   STATUS                       RESTARTS   AGE
+cb-admin-test-546969dfd6-kmnxl      1/1     Running                      0          12d
+cb-api-test-6b7955cb55-9gmf4        1/1     Running                      0          51m
+cb-database-mysql-0                 1/1     Running                      0          25d
+cb-platform-test-7c887594f5-drkmm   1/1     Running                      0          5d6h
+cb-redis-master-0                   1/1     Running                      0          25d
+cb-redis-replicas-0                 1/1     Running                      0          25d
+cb-redis-replicas-1                 1/1     Running                      0          25d
+cb-redis-replicas-2                 1/1     Running                      0          25d
+twitter-job-27126253-q77dw      0/1     CreateContainerConfigError   0          4d5h
+twitter-job-27126254-p42jm      0/1     CreateContainerConfigError   0          4d5h
+twitter-job-27126255-nsbxc      0/1     CreateContainerConfigError   0          4d5h
+twitter-job-27126256-4lqz5      0/1     CreateContainerConfigError   0          4d5h
+twitter-job-27126720-44dnt      0/1     CreateContainerConfigError   0          3d21h
+twitter-job-27128160-7tkq5      0/1     CreateContainerConfigError   0          2d21h
+twitter-job-27129600-grthj      0/1     CreateContainerConfigError   0          45h
+twitter-job-27131040-pz7vd      0/1     CreateContainerConfigError   0          21h
+</code></pre>
+<p>I see 8 pods that failed to start the container. So the jobs never started. We can't
+even look at the container logs because ... they were never created! Then,
+let's take a look into the a <code>pod</code> description:</p>
+<pre><code>kubectl describe pod twitter-job-27131040-pz7vd
+</code></pre>
+<pre><code>Name:         twitter-job-27131040-pz7vd
+Namespace:    cb
+Priority:     0
+Node:         ip-192-168-43-136.eu-west-1.compute.internal/192.168.43.136
+Start Time:   Mon, 02 Aug 2021 02:00:00 +0200
+Labels:       controller-uid=39474e16-cb47-4d45-ba7e-e0520d478e41
+              job-name=twitter-job-27131040
+Annotations:  kubernetes.io/psp: eks.privileged
+Status:       Pending
+IP:           192.168.42.63
+IPs:
+  IP:           192.168.42.63
+Controlled By:  Job/twitter-job-27131040
+Containers:
+  bb-twitter:
+    Container ID:  
+    Image:         647183375757.dkr.ecr.eu-west-1.amazonaws.com/bb
+    Image ID:      
+    Port:          &lt;none&gt;
+    Host Port:     &lt;none&gt;
+    Command:
+      node
+      scripts/twitter.js
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Environment:
+      MYSQL_USER:      root
+      MYSQL_PASSWORD:  &lt;set to the key 'mysql-root-password' in secret 'mysql'&gt;  Optional: false
+      MYSQL_SERVER:    mysql
+      MYSQL_DATABASE:  cryptobirds
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xzb7h (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             False 
+  ContainersReady   False 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-xzb7h:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       &lt;nil&gt;
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              &lt;none&gt;
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason  Age                   From     Message
+  ----     ------  ----                  ----     -------
+  Warning  Failed  20m (x5919 over 21h)  kubelet  Error: secret &quot;mysql&quot; not found
+  Normal   Pulled  8s (x6011 over 21h)   kubelet  Container image &quot;647183375757.dkr.ecr.eu-west-1.amazonaws.com/bb&quot; already present on machine
+</code></pre>
+<p>Et violà, see the events when the pod tried to run the containers:</p>
+<pre><code>Warning  Failed  20m (x5919 over 21h)  kubelet  Error: secret &quot;mysql&quot; not found
+</code></pre>
+<p>Looks like the job is configured to pass a secret that is not found in the <code>namespace</code>.</p>
+<ul>
+<li>Copy paste error?</li>
+<li>Can you find the right secret that contains the database credentials in the same
+namespace? Maybe describing other <code>deployments</code> that connect to the database?</li>
+<li>Once you fix this error. Will the job work? Will you be able to keep troubleshooting
+until it is running successfully?</li>
+</ul>
+<h3 id="list-of-things-we-want-to-see-when-observing-cronjobs">List of things we want to see when observing cronjobs</h3>
+<ul>
+<li>How many cronjobs are currently active?</li>
+<li>How many jobs are currently running?</li>
+<li>How can I see the history of jobs?</li>
+<li>How can I filter the history of the jobs?</li>
+<li>How can I see when a specific job is going to be created by a cronjob?</li>
+<li>How can I see the logs of a specific job?</li>
+<li>How can I see the last job of a specific cronjob?</li>
+<li>...</li>
+</ul>
+<h3 id="running-a-cronjob-manually">Running a cronjob manually</h3>
+<p>Sometimes you may want to manually run a cron(job), for example if a cronjob has failed and you want to run it again:</p>
+<pre><code>kubectl create job --from=cronjob/&lt;name-of-cron-job&gt; &lt;name-of-job&gt;
+</code></pre>
+<h3 id="monitoring-cronjobs-using-kubernetes-events">Monitoring cronjobs using Kubernetes events</h3>
+<p>We can use Kubernetes events to monitor the Jobs lifecycles for our Birdbrains.</p>
+<p>As an example, the following query demonstrate how can we query an event stream
+from a namespace and filter them with <code>jq</code> to identify the events we are interested on,
+like failed, created or completed jobs:</p>
+<pre><code>kubectl get events -n cb --sort-by=.metadata.creationTimestamp -o json | jq '.items[] | select(.involvedObject.kind==&quot;Job&quot;) | {Result: .reason, Name: .involvedObject.name, FinishTime: .lastTimestamp, StartTime: .firstTimestamp, Namespace: .involvedObject.namespace, Message: .message}'
+</code></pre>
+<h3 id="installing-the-kubernetes-metrics-server">Installing the Kubernetes Metrics Server</h3>
+<p>TODO:
+- https://docs.aws.amazon.com/eks/latest/userguide/metrics-server.html</p>
+<h3 id="monitoring-with-prometheus-and-graphana">Monitoring with Prometheus and Graphana</h3>
+<p>It has its own namespace: <code>cb-monitoring</code></p>
+<pre><code>helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+</code></pre>
+<pre><code>helm install prom-stack prometheus-community/kube-prometheus-stack
+</code></pre>
+<pre><code>helm upgrade prom-stack prometheus-community/kube-prometheus-stack --install
+</code></pre>
+<h4 id="exporters">Exporters:</h4>
+<p><a href="https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-mysql-exporter">MySQL</a></p>
+<pre><code>helm install prom-mysql-exporter prometheus-community/prometheus-mysql-exporter
+</code></pre>
+<p><a href="https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-mongodb-exporter">MongoDB</a></p>
+<pre><code>helm install prom-mongodb-exporter prometheus-community/prometheus-mongodb-exporter
+</code></pre>
+<p><a href="https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-redis-exporter">Redis</a></p>
+<pre><code>helm install prom-redis-exporter prometheus-community/prometheus-redis-exporter
+</code></pre>
+<h3 id="alerting-set-up-and-protocol">Alerting set-up and protocol</h3>
+<h3 id="backups-and-restore">Backups and restore</h3>
+<h3 id="autoscaling">Autoscaling</h3>
+<p>To set the kubernetes autoscaler, we followed this documentation:
+https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html</p>
+<p>In summary:</p>
+<ul>
+<li>Create this policy as <code>cb-eks-cluster-autoscaler-policy</code>, save as:
+<code>cluster-autoscaler-policy.json</code>.</li>
+</ul>
+<pre><code>{
+    &quot;Version&quot;: &quot;2012-10-17&quot;,
+    &quot;Statement&quot;: [
+        {
+            &quot;Action&quot;: [
+                &quot;autoscaling:DescribeAutoScalingGroups&quot;,
+                &quot;autoscaling:DescribeAutoScalingInstances&quot;,
+                &quot;autoscaling:DescribeLaunchConfigurations&quot;,
+                &quot;autoscaling:DescribeTags&quot;,
+                &quot;autoscaling:SetDesiredCapacity&quot;,
+                &quot;autoscaling:TerminateInstanceInAutoScalingGroup&quot;,
+                &quot;ec2:DescribeLaunchTemplateVersions&quot;
+            ],
+            &quot;Resource&quot;: &quot;*&quot;,
+            &quot;Effect&quot;: &quot;Allow&quot;
+        }
+    ]
+}
+</code></pre>
+<pre><code>aws iam create-policy \
+    --policy-name cb-eks-cluster-autoscaler-policy \
+    --policy-document file://cluster-autoscaler-policy.json
+</code></pre>
+<ul>
+<li>Then, create the service account as usual:</li>
+</ul>
+<pre><code>SERVICE_ACCOUNT_NAME=cluster-autoscaler 
+NAMESPACE=kube-system
+CLUSTER_NAME=cb-hector-eks-test-2
+IAM_POLICY_ARN=arn:aws:iam::647183375757:policy/cb-eks-cluster-autoscaler-policy
+eksctl create iamserviceaccount \
+    --name ${SERVICE_ACCOUNT_NAME} \
+    --namespace ${NAMESPACE} \
+    --cluster ${CLUSTER_NAME} \
+    --attach-policy-arn ${IAM_POLICY_ARN} \
+    --approve \
+    --override-existing-serviceaccounts
+</code></pre>
+<ul>
+<li>Deploy the autoscaler</li>
+</ul>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+</code></pre>
+<ul>
+<li>Annotate with the role ARN previously created (found it using AWS console)</li>
+</ul>
+<pre><code>ROLE_ARN=arn:aws:iam::647183375757:role/eksctl-cb-hector-eks-test-2-addon-iamservice-Role1-1JKM41GYZDYNU
+kubectl annotate serviceaccount cluster-autoscaler \
+  -n kube-system \
+  eks.amazonaws.com/role-arn=${ROLE_ARN}
+</code></pre>
+<ul>
+<li>Patch</li>
+</ul>
+<pre><code>kubectl patch deployment cluster-autoscaler \
+  -n kube-system \
+  -p '{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;cluster-autoscaler.kubernetes.io/safe-to-evict&quot;: &quot;false&quot;}}}}}'
+</code></pre>
+<ul>
+<li>Edit and replace <CLUSTER_NAME> by the cluster name</li>
+</ul>
+<pre><code>kubectl -n kube-system edit deployment.apps/cluster-autoscaler
+</code></pre>
+<ul>
+<li>Set the image version (please, follow aws instructions referenced above)</li>
+</ul>
+<pre><code>kubectl set image deployment cluster-autoscaler \
+  -n kube-system \
+  cluster-autoscaler=k8s.gcr.io/autoscaling/cluster-autoscaler:v1.21.0
+</code></pre>
+<ul>
+<li>View the cluster autoscaler logs</li>
+</ul>
+<pre><code>kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = ".",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="js/base.js" defer></script>
+        <script src="search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.3.0
+Build Date UTC : 2022-04-05 08:13:05.547840+00:00
+-->
