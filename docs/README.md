@@ -48,7 +48,6 @@ Table of Contents:
     - [Backups and restore](#backups-and-restore)
     - [Autoscaling](#autoscaling)
 
-Habana unanana.
 
 ## Authentication to all resources
 
