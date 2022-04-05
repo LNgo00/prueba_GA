@@ -1,5 +1,0 @@
-#server_url: https://acme-staging-v02.api.letsencrypt.org/directory
-server_url: https://acme-v02.api.letsencrypt.org/directory
-email: hector.valverde@biops.cloud
-dns_zone: eks-dev.cryptobirds.com
-acme_key: cb-eks-acme-key
