@@ -25,6 +25,17 @@ jobs:
       - name: copiar y pegar Readme.me  
         run: cp README.md docs
 
+      - name: github actions
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: git commit
+        run: |
+          git add docs
+          git commit -m "copiado"
+          git push
+
 
       - name: preparar python
         uses: actions/setup-python@v2    
@@ -35,3 +46,5 @@ jobs:
       - run: pip install mkdocs
       
       - run: mkdocs gh-deploy --force
+
+
