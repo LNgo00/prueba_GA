@@ -24,10 +24,4 @@ jobs:
         run: cp README.md docs
 
 
-      - name: deploy gh-pages
-        uses: actions/setup-python@v2      
-        with:
-          python-version: 3.x
-        run: pip install mkdocs
-        run: mkdocs build
-        run: mkdocs gh-deploy --force
+      
